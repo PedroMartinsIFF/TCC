@@ -1,0 +1,73 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: grep-search-
+spec:
+  entrypoint: grep-search
+  volumeClaimTemplates:
+  - metadata:
+      name: workdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+  arguments:
+    parameters:
+    - name: searchstring
+      value: hello teste falso
+  templates:
+  - name: grep-search
+    steps:
+    - - name: data
+        template: data
+    - - name: generate
+        template: generate
+    - - name: search
+        template: search
+        arguments:
+          parameters:
+          - name: words
+            value: "{{item}}"
+        withParam: "{{steps.generate.outputs.result}}"
+    - - name: result
+        template: result
+
+  - name: data
+    container:
+      image: alpine
+      command: [sh, -c]
+      args: ["touch /mnt/data/file1; touch /mnt/data/file2; echo -n hello hello teste falso2 > /mnt/data/file1; echo -n teste teste hello falso  > /mnt/data/file2"]
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/data
+
+  - name: generate
+    script:
+      image: python:alpine3.6
+      command: [python]
+      source: |
+        import json
+        import sys
+        json.dump([w for w in "{{workflow.parameters.searchstring}}".split()], sys.stdout)
+
+  - name: search
+    inputs:
+      parameters:
+      - name: words
+    container:
+      image: alpine
+      command: [sh, -c]
+      args: ["grep -ro {{inputs.parameters.words}} /mnt/data/ | wc -l  | awk -F/ '{ print $NF }' >> /mnt/data/output"]
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/data
+        
+  - name: result
+    container:
+      image: alpine
+      command: [sh, -c]
+      args: ["cat /mnt/data/output"]
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/data

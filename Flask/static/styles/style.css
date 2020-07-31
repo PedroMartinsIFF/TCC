@@ -1,0 +1,47 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+body{
+    background-color:#000000;
+}
+
+header{
+    background-color: #29303b;
+    height: 90px;
+    padding: 10px;
+}
+
+footer{
+    background-color: #29303b;
+    height: 50px;
+    clear: both;
+    text-align:center;
+    padding: 10px;
+    
+}
+
+h1{
+    color: #29303b;
+    text-align: center;
+    text-shadow: 1px 1px 1px #111111;
+    margin: 0 0 100px 0;
+}
+
+#div_principal{
+    background-image: url(images/Mooncell_automaton.png);
+    background-size: cover;
+    min-height: 1000px;
+    width: 100%;
+    padding: 80px 0 0 0;
+}
+
+.container{
+    width: 800px;
+    margin:0 auto;
+}
+
+.efeito{
+    background-color: rgba(0, 0, 0, 0.5);
+}

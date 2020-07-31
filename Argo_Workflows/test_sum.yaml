@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: sum-
+spec:
+  entrypoint: sum
+  volumeClaimTemplates:
+  - metadata:
+      name: workdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+
+  templates:
+  - name: sum
+    steps:
+    - - name: generate
+        template: generate
+    - - name: print
+        template: print
+        arguments:
+            parameters:
+            - name: result
+              value: "{{steps.generate.outputs.result}}"
+
+  - name: generate
+    script:
+      image: python:alpine3.6
+      command: [python]
+      source: |
+        import random
+        import sys
+        randomlist = []
+        for i in range(0,5):
+            n=random.randint(1,10)
+            randomlist.append(n)
+        print(randomlist)
+        
+
+
+  - name: print
+    inputs:
+        parameters:
+        - name: result
+    container:
+        image: alpine
+        command: [sh, -c]
+        args: ["echo result was: {{steps.generate.outputs.result}}"]
